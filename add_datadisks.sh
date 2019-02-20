@@ -94,7 +94,7 @@ function create_managed_disks {
         random_string RANDOM_STR 7
         DATADISK_NAME="$VM-datadisk-$RANDOM_STR-$i"
         echo "Creating disk $DATADISK_NAME, size $DISK_SIZE_GB..."
-        az vm disk attach --vm-name $VM --resource-group $RESOURCE_GROUP --disk $DATADISK_NAME --size-gb $DISK_SIZE_GB --sku $DISK_TYPE --new
+        az vm disk attach --vm-name $VM --resource-group $RESOURCE_GROUP --name $DATADISK_NAME --size-gb $DISK_SIZE_GB --sku $DISK_TYPE --new
 
         if [ ! $DISK_JSON_SERVICE_TAG = '{"Service":null}' ]; then
             echo "Adding Service Tag to disk..."
