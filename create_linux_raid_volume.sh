@@ -210,7 +210,7 @@ if [ $DEVICE_COUNT -gt 1 ]; then
         COUNTER=$((COUNTER+1))
         echo "   Attempt $COUNTER"
         if [[ "$COUNTER" -gt 15 ]]; then
-                break
+            break
         fi
 
         RND_SECONDS=$(( RANDOM % (10 - 3 + 1 ) + 3 ))
@@ -221,7 +221,7 @@ if [ $DEVICE_COUNT -gt 1 ]; then
     if [ -z $UUID_GUID ]; then
         echo "Unable to obtain UUID for /dev/$RAID_DEVICE, please run the following command to obtain it and update the last line on /etc/fstab that contains UUID as empty string"
         echo "sudo /sbin/blkid | grep /dev/$RAID_DEVICE | cut -d " " -f 2 | cut -c 7-42"
-    else
+    fi
 
     if [ "$FILE_SYSTEM" == "xfs" ]; then
         sudo mkfs -t $FILE_SYSTEM /dev/$RAID_DEVICE
