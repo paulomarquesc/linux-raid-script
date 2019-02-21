@@ -200,18 +200,37 @@ if [ $DEVICE_COUNT -gt 1 ]; then
         sudo update-initramfs -u
     fi
 
-    NEW_UUID="UUID=`sudo /sbin/blkid | grep /dev/$RAID_DEVICE | cut -d " " -f 2 | cut -c 7-42`"
+    echo "Trying to obtain UUID for /dev/$RAID_DEVICE..."
 
-    echo "NEW_UUID=$NEW_UUID"
-    
+    UUID_GUID=`sudo /sbin/blkid | grep /dev/$RAID_DEVICE | cut -d " " -f 2 | cut -c 7-42`
+    COUNTER=0
+    while ( [ -z $UUID_GUID ] )
+    do
+        UUID_GUID=`sudo /sbin/blkid | grep /dev/$RAID_DEVICE | cut -d " " -f 2 | cut -c 7-42`
+        COUNTER=$((COUNTER+1))
+        echo "   Attempt $COUNTER"
+        if [[ "$COUNTER" -gt 15 ]]; then
+                break
+        fi
+
+        RND_SECONDS=$(( RANDOM % (10 - 3 + 1 ) + 3 ))
+        echo "Sleeping $RND_SECONDS seconds before retry..."
+        sleep $RND_SECONDS
+    done
+
+    if [ -z $UUID_GUID ]; then
+        echo "Unable to obtain UUID for /dev/$RAID_DEVICE, please run the following command to obtain it and update the last line on /etc/fstab that contains UUID as empty string"
+        echo "sudo /sbin/blkid | grep /dev/$RAID_DEVICE | cut -d " " -f 2 | cut -c 7-42"
+    else
+
     if [ "$FILE_SYSTEM" == "xfs" ]; then
         sudo mkfs -t $FILE_SYSTEM /dev/$RAID_DEVICE
-        echo "$NEW_UUID $MOUNT_POINT $FILE_SYSTEM rw,noatime,attr2,inode64,nobarrier,sunit=1024,swidth=4096,nofail 0 2" >> /etc/fstab
+        echo "UUID=$UUID_GUID $MOUNT_POINT $FILE_SYSTEM rw,noatime,attr2,inode64,nobarrier,sunit=1024,swidth=4096,nofail 0 2" >> /etc/fstab
     else
         sudo mkfs.ext4 -i 2048 -I 512 -J size=400 -Odir_index,filetype /dev/$RAID_DEVICE
         sleep 5
         sudo tune2fs -o user_xattr /dev/$RAID_DEVICE
-        echo "$NEW_UUID $MOUNT_POINT $FILE_SYSTEM noatime,nodiratime,nobarrier,nofail 0 2" >> /etc/fstab
+        echo "UUID=$UUID_GUID $MOUNT_POINT $FILE_SYSTEM noatime,nodiratime,nobarrier,nofail 0 2" >> /etc/fstab
     fi
 
     if $DISABLE_FS_CHECK; then
