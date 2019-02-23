@@ -200,6 +200,7 @@ if [ $DEVICE_COUNT -gt 1 ]; then
         sudo update-initramfs -u
     fi
 
+    # Setting up /etc/fstab
     if [ "$FILE_SYSTEM" == "xfs" ]; then
         sudo mkfs -t $FILE_SYSTEM /dev/$RAID_DEVICE
         UUID_GUID=`sudo /sbin/blkid | grep /dev/$RAID_DEVICE | cut -d " " -f 2 | cut -c 7-42`
